@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { JournalEntry, IdentityTrait } from '../types';
-import { PenTool, Brain, Save } from 'lucide-react';
+import { PenTool, Brain, Save, Trash2 } from 'lucide-react';
 import { getBehavioralInsight, generateIdentityQuestions } from '../services/ai';
 
 interface JournalProps {
@@ -137,8 +137,19 @@ export const Journal: React.FC<JournalProps> = ({ entries, setEntries, identity 
       {mode === 'REVIEW' && (
           <div className="space-y-4 overflow-y-auto max-h-[60vh]">
               {entries.map(entry => (
-                  <div key={entry.id} className="p-4 border-b border-zinc-800 space-y-2">
-                      <div className="text-xs text-zinc-600">{new Date(entry.date).toLocaleDateString()}</div>
+                  <div key={entry.id} className="p-4 border-b border-zinc-800 space-y-2 group relative">
+                      <div className="flex justify-between items-start">
+                        <div className="text-xs text-zinc-600">{new Date(entry.date).toLocaleDateString()}</div>
+                        <button 
+                          onClick={() => {
+                            setEntries(entries.filter(e => e.id !== entry.id));
+                          }}
+                          className="text-zinc-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Delete Entry"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                       <p className="text-zinc-300 text-sm">{entry.content}</p>
                       {entry.aiInsight && (
                            <div className="text-xs text-emerald-600 mt-2 pl-2 border-l border-emerald-900">{entry.aiInsight}</div>
