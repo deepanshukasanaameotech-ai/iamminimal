@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { Provider } from 'react-redux';
+import { store } from './store';
 import { Layout } from './components/Layout';
 import { CommandCenter } from './components/CommandCenter';
 import { HabitLab } from './components/HabitLab';
 import { LifeSystems } from './components/LifeSystems';
 import { DeepWork } from './components/DeepWork';
 import { Journal } from './components/Journal';
-import { AppState, View, DayLog, Habit, JournalEntry } from './types';
+import { View, DayLog, Habit, JournalEntry } from './types';
 
 const INITIAL_DAY_LOG: DayLog = {
   date: new Date().toISOString().split('T')[0],
@@ -15,7 +17,7 @@ const INITIAL_DAY_LOG: DayLog = {
   completed: false
 };
 
-function App() {
+function AppContent() {
   const [view, setView] = useState<View>(View.COMMAND);
   
   // State initialization with localStorage fallback
@@ -34,12 +36,7 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [pillars, setPillars] = useState<AppState['pillars']>(() => {
-    const saved = localStorage.getItem('axis_pillars');
-    return saved ? JSON.parse(saved) : {
-      mind: 50, body: 50, money: 50, career: 50, relationships: 50, environment: 50
-    };
-  });
+  // Pillars state moved to Redux
 
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(() => {
     const saved = localStorage.getItem('axis_journal');
@@ -49,12 +46,8 @@ function App() {
   // Persistence Effects
   useEffect(() => localStorage.setItem('axis_daylog', JSON.stringify(dayLog)), [dayLog]);
   useEffect(() => localStorage.setItem('axis_habits', JSON.stringify(habits)), [habits]);
-  useEffect(() => localStorage.setItem('axis_pillars', JSON.stringify(pillars)), [pillars]);
+  // Pillars persistence handled in Redux slice
   useEffect(() => localStorage.setItem('axis_journal', JSON.stringify(journalEntries)), [journalEntries]);
-
-  const updatePillars = (key: keyof AppState['pillars'], value: number) => {
-    setPillars(prev => ({ ...prev, [key]: value }));
-  };
 
   return (
     <Layout currentView={view} setView={setView}>
@@ -67,7 +60,7 @@ function App() {
       )}
       
       {view === View.SYSTEMS && (
-        <LifeSystems pillars={pillars} updatePillars={updatePillars} />
+        <LifeSystems />
       )}
       
       {view === View.FOCUS && (
@@ -78,6 +71,14 @@ function App() {
         <Journal entries={journalEntries} setEntries={setJournalEntries} identity={[]} />
       )}
     </Layout>
+  );
+}
+
+function App() {
+  return (
+    <Provider store={store}>
+      <AppContent />
+    </Provider>
   );
 }
 
